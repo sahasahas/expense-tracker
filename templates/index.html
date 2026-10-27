@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>💸 Expense Tracker</h1>
+    <div class="top-actions">
+      <input type="month" id="monthPicker" value="{{ this_month }}" aria-label="Month">
+      <label class="check"><input type="checkbox" id="allTime"> All time</label>
+      <button class="btn ghost" id="themeBtn" title="Toggle theme">🌓</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Summary cards -->
+    <section class="cards">
+      <div class="card income"><span>Income</span><strong id="sumIncome">₹0</strong></div>
+      <div class="card expense"><span>Expenses</span><strong id="sumExpense">₹0</strong></div>
+      <div class="card balance"><span>Balance</span><strong id="sumBalance">₹0</strong></div>
+      <div class="card budget">
+        <span>Monthly budget
+          <button class="link" id="editBudget">edit</button></span>
+        <strong id="budgetText">Not set</strong>
+        <div class="bar"><div id="budgetBar"></div></div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- Left: form + charts -->
+      <aside>
+        <section class="panel">
+          <h2 id="formTitle">Add transaction</h2>
+          <form id="txForm" novalidate>
+            <input type="hidden" id="txId">
+            <div class="seg">
+              <input type="radio" name="type" id="typeExpense" value="expense" checked>
+              <label for="typeExpense">Expense</label>
+              <input type="radio" name="type" id="typeIncome" value="income">
+              <label for="typeIncome">Income</label>
+            </div>
+            <label>Title
+              <input type="text" id="title" maxlength="100" placeholder="e.g. Lunch" required>
+            </label>
+            <div class="row">
+              <label>Amount (₹)
+                <input type="number" id="amount" min="0.01" step="0.01" placeholder="0.00" required>
+              </label>
+              <label>Date
+                <input type="date" id="date" value="{{ today }}" required>
+              </label>
+            </div>
+            <label>Category
+              <select id="category"></select>
+            </label>
+            <label>Note (optional)
+              <input type="text" id="note" maxlength="300">
+            </label>
+            <p class="error" id="formError" role="alert"></p>
+            <div class="row">
+              <button type="submit" class="btn primary" id="saveBtn">Add</button>
+              <button type="button" class="btn ghost" id="cancelBtn" hidden>Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Spending by category</h2>
+          <div class="chart-box"><canvas id="pieChart"></canvas></div>
+          <p class="empty" id="pieEmpty" hidden>No expenses yet.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Last 6 months</h2>
+          <div class="chart-box"><canvas id="barChart"></canvas></div>
+        </section>
+      </aside>
+
+      <!-- Right: list -->
+      <section class="panel list-panel">
+        <div class="filters">
+          <input type="search" id="search" placeholder="Search title or note…">
+          <select id="fType">
+            <option value="">All types</option>
+            <option value="expense">Expenses</option>
+            <option value="income">Income</option>
+          </select>
+          <select id="fCategory"><option value="">All categories</option></select>
+          <select id="fSort">
+            <option value="date_desc">Newest</option>
+            <option value="date_asc">Oldest</option>
+            <option value="amount_desc">Amount ↓</option>
+            <option value="amount_asc">Amount ↑</option>
+          </select>
+          <button class="btn ghost" id="exportBtn">⬇ CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Title</th><th>Category</th><th class="num">Amount</th><th></th></tr>
+            </thead>
+            <tbody id="txBody"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="listEmpty" hidden>No transactions found.</p>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    window.CATS = {
+      expense: {{ expense_categories | tojson }},
+      income: {{ income_categories | tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
